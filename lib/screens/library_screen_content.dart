@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../models/historical_figure.dart';
+import '../models/historical_figure.dart'; // if Debate is defined there
 
 class LibraryScreenContent extends StatefulWidget {
   const LibraryScreenContent({super.key});
@@ -16,14 +16,16 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
     Debate(
       id: '1',
       title: 'The Future of AI',
-      description: 'Watch a debate between two AI figures on the future of artificial intelligence.',
+      description:
+          'Watch a debate between two AI figures on the future of artificial intelligence.',
       type: 'AI VS AI',
       createdAt: DateTime.now().subtract(const Duration(days: 2)),
     ),
     Debate(
       id: '2',
       title: 'Ethics of Genetic Engineering',
-      description: 'Replay your debate with an AI figure on the ethical implications of genetic engineering.',
+      description:
+          'Replay your debate with an AI figure on the ethical implications of genetic engineering.',
       type: 'USER VS AI',
       createdAt: DateTime.now().subtract(const Duration(days: 5)),
     ),
@@ -33,7 +35,8 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
     Debate(
       id: '3',
       title: 'Government in Healthcare',
-      description: 'Watch a debate between two AI figures on the role of government in healthcare.',
+      description:
+          'Watch a debate between two AI figures on the role of government in healthcare.',
       type: 'AI VS AI',
       createdAt: DateTime.now().subtract(const Duration(days: 10)),
     ),
@@ -44,13 +47,14 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
     final debates = _selectedTab == 0 ? _savedDebates : _pastDebates;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkNavy,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -64,9 +68,18 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, color: AppTheme.whiteText),
-                    onPressed: () {},
+                    onPressed: () {
+                      // optional: open a dedicated search screen later
+                    },
                   ),
                 ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                'Replay your debates and watch AI vs AI showdowns.',
+                style: TextStyle(color: AppTheme.lightGray, fontSize: 14),
               ),
             ),
 
@@ -138,7 +151,10 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.darkCard,
                   borderRadius: BorderRadius.circular(12),
@@ -151,10 +167,11 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
                       child: TextField(
                         style: const TextStyle(color: AppTheme.whiteText),
                         decoration: const InputDecoration(
-                          hintText: 'Search by topic or character...',
+                          hintText: 'Search by topic or figure...',
                           hintStyle: TextStyle(color: AppTheme.mediumGray),
                           border: InputBorder.none,
                         ),
+                        // TODO: hook this up to filter debates if you want
                       ),
                     ),
                   ],
@@ -189,6 +206,7 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Text content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +239,9 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO: hook to replay/watch logic
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.brightRed,
                     padding: const EdgeInsets.symmetric(
@@ -257,6 +277,7 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
             ),
           ),
           const SizedBox(width: 16),
+          // Thumbnail placeholder
           Container(
             width: 100,
             height: 100,
@@ -275,5 +296,3 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
     );
   }
 }
-
-

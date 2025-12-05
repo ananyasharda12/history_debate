@@ -6,24 +6,31 @@ import 'type_topic_screen.dart';
 import 'pick_figure_screen.dart';
 import 'settings_screen.dart';
 import 'debate_chat_screen.dart';
+import 'start_debate_flow_screen.dart';
 
 class HomeScreenContent extends StatelessWidget {
   const HomeScreenContent({super.key});
 
-  // Default figure for quick start debate
+  // Default figure for quick start debate (kept for future use)
   static const _defaultFigure = HistoricalFigure(
     id: '1',
     name: 'Abraham Lincoln',
     title: '16th President of the United States',
     lifespan: '1809-1865',
     imageUrl: '',
-    coreBeliefs: 'Lincoln believed in the preservation of the Union, the abolition of slavery, and the importance of democracy and equality for all citizens.',
-    speechStyle: 'Lincoln was known for his eloquent and persuasive speeches, often using clear and concise language to convey complex ideas.',
-    keyDecisions: "Lincoln's key decisions include issuing the Emancipation Proclamation, leading the Union through the Civil War, and delivering the Gettysburg Address.",
-    famousQuote: 'Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.',
+    coreBeliefs:
+        'Lincoln believed in the preservation of the Union, the abolition of slavery, and the importance of democracy and equality for all citizens.',
+    speechStyle:
+        'Lincoln was known for his eloquent and persuasive speeches, often using clear and concise language to convey complex ideas.',
+    keyDecisions:
+        "Lincoln's key decisions include issuing the Emancipation Proclamation, leading the Union through the Civil War, and delivering the Gettysburg Address.",
+    famousQuote:
+        'Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.',
     modernViews: {
-      'Climate Change': 'Lincoln would likely emphasize the moral imperative to protect future generations and the need for collective action.',
-      'Healthcare': 'Lincoln would likely advocate for a system that ensures access to healthcare for all citizens, emphasizing social responsibility.',
+      'Climate Change':
+          'Lincoln would likely emphasize the moral imperative to protect future generations and the need for collective action.',
+      'Healthcare':
+          'Lincoln would likely advocate for a system that ensures access to healthcare for all citizens, emphasizing social responsibility.',
     },
   );
 
@@ -67,18 +74,31 @@ class HomeScreenContent extends StatelessWidget {
               color: AppTheme.brightRed,
               margin: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
 
-            // Main Title
-            const Text(
-              'Debate with Historical Figures',
-              style: TextStyle(
-                color: AppTheme.whiteText,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'serif',
+            // Main Title + Tagline
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                children: [
+                  Text(
+                    'Debate the Minds of History',
+                    style: TextStyle(
+                      color: AppTheme.whiteText,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'serif',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    "Challenge history's greatest thinkers on modern or classic issues in real-time debates.",
+                    style: TextStyle(color: AppTheme.lightRed, fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
 
@@ -94,46 +114,15 @@ class HomeScreenContent extends StatelessWidget {
                       'Start a Debate',
                       AppTheme.brightRed,
                       () {
-                        // Navigate directly to chat screen with default figure
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const DebateChatScreen(
-                              figure: _defaultFigure,
-                            ),
+                            builder: (context) => const StartDebateFlowScreen(),
                           ),
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
-                    _buildActionButton(
-                      context,
-                      'Pick a Historical Figure',
-                      AppTheme.brightRed,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PickFigureScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildActionButton(
-                      context,
-                      'Type a Topic',
-                      AppTheme.brightRed,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TypeTopicScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     _buildActionButton(
                       context,
                       'Replay Past Debates',
@@ -188,6 +177,4 @@ class HomeScreenContent extends StatelessWidget {
       ),
     );
   }
-
 }
-

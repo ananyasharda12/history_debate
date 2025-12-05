@@ -6,10 +6,7 @@ import 'debate_chat_screen.dart';
 class HistoricalFigureProfileScreen extends StatelessWidget {
   final HistoricalFigure figure;
 
-  const HistoricalFigureProfileScreen({
-    super.key,
-    required this.figure,
-  });
+  const HistoricalFigureProfileScreen({super.key, required this.figure});
 
   @override
   Widget build(BuildContext context) {
@@ -17,20 +14,25 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
       backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
         backgroundColor: AppTheme.darkBackground,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppTheme.whiteText),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Historical Figure',
-          style: TextStyle(color: AppTheme.whiteText),
+        title: Text(
+          figure.name,
+          style: const TextStyle(
+            color: AppTheme.whiteText,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'serif',
+          ),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            
             // Portrait
             CircleAvatar(
               radius: 60,
@@ -42,112 +44,91 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Name and Title
-            Text(
-              figure.name,
-              style: const TextStyle(
-                color: AppTheme.whiteText,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
             Text(
               figure.title,
               style: const TextStyle(
                 color: AppTheme.whiteText,
                 fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               figure.lifespan,
-              style: const TextStyle(
-                color: AppTheme.whiteText,
-                fontSize: 14,
+              style: const TextStyle(color: AppTheme.lightRed, fontSize: 13),
+            ),
+            const SizedBox(height: 28),
+
+            // Info Cards
+            _buildInfoCard('💭 Beliefs & Ideals', figure.coreBeliefs),
+            const SizedBox(height: 16),
+            _buildInfoCard('🗣️ Speech Style', figure.speechStyle),
+            const SizedBox(height: 16),
+            _buildInfoCard('⚖️ Key Actions', figure.keyDecisions),
+            const SizedBox(height: 16),
+            _buildQuoteCard('✍️ Notable Quote', figure.famousQuote),
+            const SizedBox(height: 28),
+
+            // Modern Views
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '🌍 How They Might Argue Today',
+                style: TextStyle(
+                  color: AppTheme.whiteText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'serif',
+                ),
               ),
             ),
+            const SizedBox(height: 16),
+            ...figure.modernViews.entries.map((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _buildModernViewCard(entry.key, entry.value),
+              );
+            }),
+
             const SizedBox(height: 32),
-            
-            // Information Cards
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _buildInfoCard('Core Beliefs', figure.coreBeliefs),
-                  const SizedBox(height: 16),
-                  _buildInfoCard('Speech Style', figure.speechStyle),
-                  const SizedBox(height: 16),
-                  _buildInfoCard('Key Decisions', figure.keyDecisions),
-                  const SizedBox(height: 16),
-                  _buildQuoteCard('Famous Quotes', figure.famousQuote),
-                  const SizedBox(height: 32),
-                  
-                  // How He Would Argue Today
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'How He Would Argue Today',
-                      style: TextStyle(
-                        color: AppTheme.whiteText,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Modern Views Cards
-                  ...figure.modernViews.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _buildModernViewCard(entry.key, entry.value),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
+
             // Start Debate Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DebateChatScreen(figure: figure),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.brightRed,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DebateChatScreen(figure: figure),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.brightRed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'Start Debate',
-                    style: TextStyle(
-                      color: AppTheme.whiteText,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                child: const Text(
+                  'Debate This Figure',
+                  style: TextStyle(
+                    color: AppTheme.whiteText,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'serif',
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
           ],
         ),
       ),
-      // Bottom nav is handled by MainNavigationScreen (if used as a tab)
     );
   }
 
@@ -176,6 +157,7 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
             style: const TextStyle(
               color: AppTheme.whiteText,
               fontSize: 14,
+              height: 1.4,
             ),
           ),
         ],
@@ -204,14 +186,14 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.only(left: 16),
+            padding: const EdgeInsets.only(left: 14),
             decoration: const BoxDecoration(
               border: Border(
-                left: BorderSide(color: AppTheme.brightRed, width: 4),
+                left: BorderSide(color: AppTheme.brightRed, width: 3),
               ),
             ),
             child: Text(
-              quote,
+              '"$quote"',
               style: const TextStyle(
                 color: AppTheme.whiteText,
                 fontSize: 14,
@@ -227,44 +209,29 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
   Widget _buildModernViewCard(String topic, String view) {
     return Container(
       width: double.infinity,
-      height: 150,
       decoration: BoxDecoration(
         color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.darkCard,
-            AppTheme.darkCard.withOpacity(0.7),
-          ],
-        ),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             topic,
             style: const TextStyle(
               color: AppTheme.whiteText,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             view,
-            style: const TextStyle(
-              color: AppTheme.whiteText,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: AppTheme.whiteText, fontSize: 14),
           ),
         ],
       ),
     );
   }
-
 }
-
