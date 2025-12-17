@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -36,37 +36,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSection('Appearance', [
-                _buildSettingItem(
-                  'Font size',
-                  'Medium',
-                  () {},
-                ),
-                _buildSettingItem(
-                  'Theme',
-                  'Dark',
-                  () {},
-                ),
+                _buildSettingItem('Font size', 'Medium', () {}),
+                _buildSettingItem('Theme', 'Dark', () {}),
               ]),
               const SizedBox(height: 24),
               _buildSection('Account', [
-                _buildSettingItem(
-                  'Badges',
-                  '0 badges',
-                  () {},
-                ),
-                _buildSettingItem(
-                  'Debate streak',
-                  '0 day streak',
-                  () {},
-                ),
+                _buildSettingItem('Badges', '0 badges', () {}),
+                _buildSettingItem('Debate streak', '0 day streak', () {}),
               ]),
               const SizedBox(height: 24),
               _buildSection('Language', [
-                _buildSettingItem(
-                  'Language',
-                  'English',
-                  () {},
-                ),
+                _buildSettingItem('Language', 'English', () {}),
               ]),
               const SizedBox(height: 24),
               _buildSection('Accessibility', [
@@ -117,22 +97,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: ListTile(
         title: Text(
           title,
-          style: const TextStyle(
-            color: AppTheme.whiteText,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: AppTheme.whiteText, fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: AppTheme.lightGray,
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: AppTheme.lightGray, fontSize: 14),
         ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppTheme.whiteText,
-        ),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.whiteText),
         onTap: onTap,
       ),
     );
@@ -153,17 +124,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: ListTile(
         title: Text(
           title,
-          style: const TextStyle(
-            color: AppTheme.whiteText,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: AppTheme.whiteText, fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: AppTheme.lightGray,
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: AppTheme.lightGray, fontSize: 14),
         ),
         trailing: Switch(
           value: value,
@@ -173,6 +138,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
 }
-

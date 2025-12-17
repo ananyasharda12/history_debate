@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../models/historical_figure.dart'; // if Debate is defined there
+import 'package:provider/provider.dart';
+
+import '../../models/historical_figure.dart';
+import '../../theme/app_theme.dart';
+import 'providers/library_provider.dart';
+import '../debate/debate_chat_screen.dart';
 
 class LibraryScreenContent extends StatefulWidget {
   const LibraryScreenContent({super.key});
@@ -12,39 +16,21 @@ class LibraryScreenContent extends StatefulWidget {
 class _LibraryScreenContentState extends State<LibraryScreenContent> {
   int _selectedTab = 0; // 0 = Saved, 1 = Past
 
-  final List<Debate> _savedDebates = [
-    Debate(
-      id: '1',
-      title: 'The Future of AI',
-      description:
-          'Watch a debate between two AI figures on the future of artificial intelligence.',
-      type: 'AI VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    Debate(
-      id: '2',
-      title: 'Ethics of Genetic Engineering',
-      description:
-          'Replay your debate with an AI figure on the ethical implications of genetic engineering.',
-      type: 'USER VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-  ];
-
-  final List<Debate> _pastDebates = [
-    Debate(
-      id: '3',
-      title: 'Government in Healthcare',
-      description:
-          'Watch a debate between two AI figures on the role of government in healthcare.',
-      type: 'AI VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LibraryProvider>().loadDebates();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final debates = _selectedTab == 0 ? _savedDebates : _pastDebates;
+    final provider = context.watch<LibraryProvider>();
+    final debates = provider.debates.where((debate) {
+      if (_selectedTab == 0) return debate.type == 'USER VS AI';
+      return true;
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
@@ -171,7 +157,7 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
                           hintStyle: TextStyle(color: AppTheme.mediumGray),
                           border: InputBorder.none,
                         ),
-                        // TODO: hook this up to filter debates if you want
+                        onChanged: context.read<LibraryProvider>().setQuery,
                       ),
                     ),
                   ],
@@ -181,13 +167,26 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
 
             // Debate Cards
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: debates.length,
-                itemBuilder: (context, index) {
-                  return _buildDebateCard(debates[index]);
-                },
-              ),
+              child: provider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.brightRed,
+                      ),
+                    )
+                  : provider.error != null
+                      ? Center(
+                          child: Text(
+                            provider.error!,
+                            style: const TextStyle(color: AppTheme.lightGray),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: debates.length,
+                          itemBuilder: (context, index) {
+                            return _buildDebateCard(context, debates[index]);
+                          },
+                        ),
             ),
           ],
         ),
@@ -195,7 +194,7 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
     );
   }
 
-  Widget _buildDebateCard(Debate debate) {
+  Widget _buildDebateCard(BuildContext context, Debate debate) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -240,7 +239,27 @@ class _LibraryScreenContentState extends State<LibraryScreenContent> {
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () {
-                    // TODO: hook to replay/watch logic
+                    final figure = debate.figures?.first;
+                    if (figure == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No figure info saved for this debate.'),
+                          backgroundColor: AppTheme.brightRed,
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DebateChatScreen(
+                          figure: figure,
+                          initialTopic: debate.title,
+                          debateId: debate.id,
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.brightRed,

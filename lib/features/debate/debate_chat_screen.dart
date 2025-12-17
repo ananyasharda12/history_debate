@@ -1,67 +1,55 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../models/historical_figure.dart';
+import 'package:provider/provider.dart';
 
-class DebateChatScreen extends StatefulWidget {
-  final HistoricalFigure? figure;
-  final String? initialTopic;
+import '../../models/historical_figure.dart';
+import '../../theme/app_theme.dart';
+import 'providers/debate_provider.dart';
 
-  const DebateChatScreen({super.key, this.figure, this.initialTopic});
+class DebateChatScreen extends StatelessWidget {
+  final HistoricalFigure figure;
+  final String initialTopic;
+  final String? debateId;
+
+  const DebateChatScreen({
+    super.key,
+    required this.figure,
+    required this.initialTopic,
+    this.debateId,
+  });
 
   @override
-  State<DebateChatScreen> createState() => _DebateChatScreenState();
-}
-
-class _DebateChatScreenState extends State<DebateChatScreen> {
-  final TextEditingController _messageController = TextEditingController();
-  final List<DebateMessage> _messages = [];
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    final figureName = widget.figure?.name ?? 'Abraham Lincoln';
-
-    String greetingMessage;
-    if (widget.initialTopic != null && widget.initialTopic!.trim().isNotEmpty) {
-      greetingMessage =
-          'Greetings, young scholar. I am $figureName, and I understand you wish to discuss '
-          '${widget.initialTopic}. This is a topic of great importance, and I am eager to share my perspective. '
-          'What are your thoughts on this matter?';
-    } else {
-      greetingMessage =
-          'Greetings, young scholar. I am $figureName, and I am here to engage in a thoughtful discourse on '
-          'matters of governance, liberty, and the pursuit of a more perfect union. '
-          'What questions or topics are on your mind today?';
-    }
-
-    _messages.add(
-      DebateMessage(
-        id: '1',
-        text: greetingMessage,
-        isUser: false,
-        timestamp: DateTime.now(),
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => DebateProvider()
+        ..init(
+          figure: figure,
+          topic: initialTopic,
+          debateId: debateId,
+        ),
+      child: _DebateChatView(
+        figure: figure,
+        topic: initialTopic,
       ),
     );
-
-    // If there’s an initial topic, show it as the user’s first message
-    if (widget.initialTopic != null && widget.initialTopic!.trim().isNotEmpty) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!mounted) return;
-        setState(() {
-          _messages.add(
-            DebateMessage(
-              id: '2',
-              text: "I'd like to discuss ${widget.initialTopic}.",
-              isUser: true,
-              timestamp: DateTime.now(),
-            ),
-          );
-        });
-      });
-    }
   }
+}
+
+class _DebateChatView extends StatefulWidget {
+  final HistoricalFigure figure;
+  final String topic;
+
+  const _DebateChatView({
+    required this.figure,
+    required this.topic,
+  });
+
+  @override
+  State<_DebateChatView> createState() => _DebateChatViewState();
+}
+
+class _DebateChatViewState extends State<_DebateChatView> {
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -70,53 +58,25 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _send(BuildContext context) async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
+    _messageController.clear();
+    await context.read<DebateProvider>().sendMessage(text);
 
-    setState(() {
-      _messages.add(
-        DebateMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: text,
-          isUser: true,
-          timestamp: DateTime.now(),
-        ),
-      );
-      _messageController.clear();
-    });
-
-    // Scroll to bottom
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-
-    // Placeholder AI response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add(
-          DebateMessage(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            text:
-                'That is a thoughtful question. Let me share my perspective on this matter…',
-            isUser: false,
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
-    });
+    await Future.delayed(const Duration(milliseconds: 150));
+    if (!mounted || !_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final figure = widget.figure;
+    final provider = context.watch<DebateProvider>();
+    final messages = provider.messages;
 
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
@@ -127,7 +87,7 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          figure?.name ?? 'Debate',
+          widget.figure.name,
           style: const TextStyle(color: AppTheme.whiteText),
         ),
         centerTitle: true,
@@ -147,26 +107,38 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
           _buildConversationHeader(),
           const SizedBox(height: 8),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildMessageBubble(_messages[index]);
-              },
-            ),
+            child: messages.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.brightRed,
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      return _buildMessageBubble(messages[index]);
+                    },
+                  ),
           ),
-          _buildInputBar(),
+          if (provider.isSending)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Thinking...',
+                style: TextStyle(color: AppTheme.lightGray),
+              ),
+            ),
+          _buildInputBar(context),
         ],
       ),
     );
   }
 
-  // Small header under the AppBar explaining who you're debating + topic
   Widget _buildConversationHeader() {
-    final name = widget.figure?.name ?? 'Historical Figure';
-    final title = widget.figure?.title ?? '';
-    final topic = widget.initialTopic;
+    final title = widget.figure.title;
+    final topic = widget.topic;
 
     return Container(
       width: double.infinity,
@@ -175,13 +147,13 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'You are debating:',
-            style: const TextStyle(color: AppTheme.lightGray, fontSize: 12),
+            style: TextStyle(color: AppTheme.lightGray, fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
-            name,
+            widget.figure.name,
             style: const TextStyle(
               color: AppTheme.whiteText,
               fontSize: 18,
@@ -195,7 +167,7 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
               style: const TextStyle(color: AppTheme.lightGray, fontSize: 13),
             ),
           ],
-          if (topic != null && topic.trim().isNotEmpty) ...[
+          if (topic.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               'Topic: $topic',
@@ -228,9 +200,8 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: message.isUser
-                    ? AppTheme.brightRed
-                    : AppTheme.darkMaroon,
+                color:
+                    message.isUser ? AppTheme.brightRed : AppTheme.darkMaroon,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -252,7 +223,7 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
     );
   }
 
-  Widget _buildInputBar() {
+  Widget _buildInputBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(color: AppTheme.darkMaroon),
@@ -274,7 +245,7 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
                   hintStyle: TextStyle(color: AppTheme.lightGray),
                   border: InputBorder.none,
                 ),
-                onSubmitted: (_) => _sendMessage(),
+                onSubmitted: (_) => _send(context),
               ),
             ),
           ),
@@ -288,26 +259,11 @@ class _DebateChatScreenState extends State<DebateChatScreen> {
             ),
             child: IconButton(
               icon: const Icon(Icons.send, color: AppTheme.whiteText),
-              onPressed: _sendMessage,
+              onPressed: () => _send(context),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-/// Simple message model used by the chat UI
-class DebateMessage {
-  final String id;
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  DebateMessage({
-    required this.id,
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
 }

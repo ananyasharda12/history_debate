@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../models/historical_figure.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/historical_figure.dart';
+import '../../theme/app_theme.dart';
+import 'providers/library_provider.dart';
+import '../debate/debate_chat_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -12,36 +16,22 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> {
   int _selectedTab = 0; // 0 = Saved, 1 = Past
 
-  final List<Debate> _savedDebates = [
-    Debate(
-      id: '1',
-      title: 'The Future of AI',
-      description: 'Watch a debate between two AI figures on the future of artificial intelligence.',
-      type: 'AI VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    Debate(
-      id: '2',
-      title: 'Ethics of Genetic Engineering',
-      description: 'Replay your debate with an AI figure on the ethical implications of genetic engineering.',
-      type: 'USER VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-  ];
-
-  final List<Debate> _pastDebates = [
-    Debate(
-      id: '3',
-      title: 'Government in Healthcare',
-      description: 'Watch a debate between two AI figures on the role of government in healthcare.',
-      type: 'AI VS AI',
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LibraryProvider>().loadDebates();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final debates = _selectedTab == 0 ? _savedDebates : _pastDebates;
+    final provider = context.watch<LibraryProvider>();
+    final allDebates = provider.debates;
+    final debates = allDebates.where((debate) {
+      if (_selectedTab == 0) return debate.type == 'USER VS AI';
+      return true;
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.darkNavy,
@@ -138,7 +128,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.darkCard,
                   borderRadius: BorderRadius.circular(12),
@@ -155,6 +148,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           hintStyle: TextStyle(color: AppTheme.mediumGray),
                           border: InputBorder.none,
                         ),
+                        onChanged:
+                            context.read<LibraryProvider>().setQuery,
                       ),
                     ),
                   ],
@@ -164,13 +159,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
             // Debate Cards
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: debates.length,
-                itemBuilder: (context, index) {
-                  return _buildDebateCard(debates[index]);
-                },
-              ),
+              child: provider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.brightRed,
+                      ),
+                    )
+                  : provider.error != null
+                      ? Center(
+                          child: Text(
+                            provider.error!,
+                            style: const TextStyle(color: AppTheme.lightGray),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: debates.length,
+                          itemBuilder: (context, index) {
+                            return _buildDebateCard(context, debates[index]);
+                          },
+                        ),
             ),
           ],
         ),
@@ -179,7 +187,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildDebateCard(Debate debate) {
+  Widget _buildDebateCard(BuildContext context, Debate debate) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -222,7 +230,29 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final figure = debate.figures?.first;
+                    if (figure == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No figure info saved for this debate.'),
+                          backgroundColor: AppTheme.brightRed,
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DebateChatScreen(
+                          figure: figure,
+                          initialTopic: debate.title,
+                          debateId: debate.id,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.brightRed,
                     padding: const EdgeInsets.symmetric(
@@ -279,15 +309,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Widget _buildBottomNavBar(BuildContext context, int currentIndex) {
     return Container(
       height: 70,
-      decoration: const BoxDecoration(
-        color: AppTheme.darkNavy,
-      ),
+      decoration: const BoxDecoration(color: AppTheme.darkNavy),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(context, Icons.home, 'Home', 0, currentIndex),
           _buildNavItem(context, Icons.campaign, 'Debate', 1, currentIndex),
-          _buildNavItem(context, Icons.library_books, 'Library', 2, currentIndex),
+          _buildNavItem(
+            context,
+            Icons.library_books,
+            'Library',
+            2,
+            currentIndex,
+          ),
           _buildNavItem(context, Icons.people, 'Figures', 3, currentIndex),
           _buildNavItem(context, Icons.person, 'Profile', 4, currentIndex),
         ],
@@ -323,4 +357,3 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 }
-

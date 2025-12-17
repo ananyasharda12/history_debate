@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import 'historical_figures_screen.dart';
-import 'library_screen.dart';
-import 'settings_screen.dart';
+import '../../theme/app_theme.dart';
+import '../debate/historical_debate_screen.dart';
+import '../library/library_screen.dart';
+import '../profile/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -78,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const HistoricalFiguresScreen(),
+                                const HistoricalDebateScreen(),
                           ),
                         );
                       },
@@ -93,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const HistoricalFiguresScreen(),
+                                const HistoricalDebateScreen(),
                           ),
                         );
                       },

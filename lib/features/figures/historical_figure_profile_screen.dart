@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../models/historical_figure.dart';
-import 'debate_chat_screen.dart';
+import '../../theme/app_theme.dart';
+import '../../models/historical_figure.dart';
+import '../debate/debate_chat_screen.dart';
 
 class HistoricalFigureProfileScreen extends StatelessWidget {
   final HistoricalFigure figure;
@@ -104,7 +104,10 @@ class HistoricalFigureProfileScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DebateChatScreen(figure: figure),
+                      builder: (context) => DebateChatScreen(
+                        figure: figure,
+                        initialTopic: 'Open debate',
+                      ),
                     ),
                   );
                 },
