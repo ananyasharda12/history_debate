@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../../models/historical_figure.dart';
 import '../../theme/app_theme.dart';
+import '../../models/historical_figure.dart';
 import '../figures/pick_figure_screen.dart';
 import 'debate_chat_screen.dart';
-import '../figures/providers/figure_provider.dart';
 
 class StartDebateFlowScreen extends StatefulWidget {
   const StartDebateFlowScreen({super.key});
@@ -204,20 +201,28 @@ class _StartDebateFlowScreenState extends State<StartDebateFlowScreen> {
     );
   }
 
-  Future<void> _startDebate(
-    BuildContext context,
-    HistoricalFigure preparedFigure,
-  ) async {
-    final topic = _topic.trim();
-    if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DebateChatScreen(
-          figure: preparedFigure,
-          initialTopic: topic,
-        ),
-      ),
+  /// Build a figure object based on either the selected figure or typed name.
+  HistoricalFigure? _getFigureForDebate() {
+    final name = _figureController.text.trim();
+    if (name.isEmpty) return null;
+
+    // If user chose from Browse, use that full model.
+    if (_selectedFigure != null) return _selectedFigure;
+
+    // Otherwise create a lightweight figure using just the typed name.
+    return HistoricalFigure(
+      id: 'custom_${name.toLowerCase().replaceAll(' ', '_')}',
+      name: name,
+      title: 'Debate Opponent',
+      lifespan: '',
+      imageUrl: '',
+      coreBeliefs:
+          '$name is being treated as a custom debate opponent created from the name you typed.',
+      speechStyle:
+          'Responds in a reasoned, debate-oriented style appropriate for the discussion.',
+      keyDecisions: '',
+      famousQuote: '',
+      modernViews: const {},
     );
   }
 
@@ -232,17 +237,19 @@ class _StartDebateFlowScreenState extends State<StartDebateFlowScreen> {
       height: 56,
       child: ElevatedButton(
         onPressed: isEnabled
-            ? () async {
-                final name = _figureController.text.trim();
-                final topic = _topic.trim();
-                if (name.isEmpty || topic.isEmpty) return;
+            ? () {
+                final figure = _getFigureForDebate();
+                if (figure == null) return;
 
-                final figureProvider = context.read<FigureProvider>();
-                final figure = _selectedFigure ??
-                    await figureProvider.addCustomFigure(name);
-
-                if (!mounted) return;
-                await _startDebate(context, figure);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DebateChatScreen(
+                      figure: figure,
+                      initialTopic: _topic.trim(),
+                    ),
+                  ),
+                );
               }
             : null,
         style: ElevatedButton.styleFrom(
